@@ -38,7 +38,9 @@ func (a *Airshow) Run() {
 	addressChannel := make(chan string)
 	go func() {
 		err := searchBonjour("_airplay._tcp", addressChannel)
-		panic("bonjour err", err)
+		if err != nil {
+			panic(fmt.Sprintln("bonjour err %s", err))
+		}
 	}()
 	go func() {
 		time.Sleep(time.Second * 5)
