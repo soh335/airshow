@@ -3,6 +3,7 @@ package airshow
 import (
 	"fmt"
 	"math/rand"
+	"os"
 	"time"
 )
 
@@ -36,20 +37,30 @@ func (a *Airshow) Run() {
 
 	// bonjour ...
 	addressChannel := make(chan string)
+	timeout := time.After(time.Second * 5)
+
 	go func() {
 		err := searchBonjour("_airplay._tcp", addressChannel)
 		if err != nil {
 			panic(fmt.Sprintln("bonjour err %s", err))
 		}
 	}()
-	go func() {
-		time.Sleep(time.Second * 5)
-		close(addressChannel)
-	}()
 
-	addresses := make([]string, len(addressChannel))
-	for address := range addressChannel {
-		addresses = append(addresses, address)
+	addresses := make([]string, 0)
+LOOP:
+	for {
+		select {
+		case address := <-addressChannel:
+			addresses = append(addresses, address)
+		case <-timeout:
+			close(addressChannel)
+			break LOOP
+		}
+	}
+
+	if len(addresses) < 1 {
+		fmt.Println("not found airplay device")
+		os.Exit(1)
 	}
 
 	for index, address := range addresses {
