@@ -14,6 +14,7 @@ func searchBonjour(protocol string, addressChannel chan string) error {
 		return err
 	}
 
+	defer ctx.Release()
 	go dnssd.Process(ctx)
 
 	for {
@@ -36,6 +37,7 @@ func searchBonjour(protocol string, addressChannel chan string) error {
 			return err
 		}
 
+		defer rctx.Release()
 		go dnssd.Process(rctx)
 
 		resolveReply, _ := <-rc
@@ -54,6 +56,7 @@ func searchBonjour(protocol string, addressChannel chan string) error {
 			return err
 		}
 
+		defer qctx.Release()
 		go dnssd.Process(qctx)
 
 		queryRecordReply, _ := <-qc
@@ -72,6 +75,7 @@ func searchBonjour(protocol string, addressChannel chan string) error {
 			return err
 		}
 
+		defer gctx.Release()
 		go dnssd.Process(gctx)
 
 		getAddrInfoReply, _ := <-gc
